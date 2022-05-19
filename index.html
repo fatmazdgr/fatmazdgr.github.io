@@ -76,9 +76,33 @@
 
         return output
 
+    def decompress(compressed):
+        """Turn the list of (offset, length, char) into an output string"""
+
+        output = ""
+
+        for value in compressed:
+            offset, length, char = value
+
+            if length == 0:
+                if char is not None:
+                    output += char
+            else:
+                if offset == 0:
+                    if char is not None:
+                        output += char
+                        length -= 1
+                        offset = 1
+                start_index = len(output) - offset
+                for i in range(length):
+                    output += output[start_index + i]
+
+        return output
+
     data_original = "tipp tap tipp tap tippe tippe tipp tap"
     data_compressed = compress(data_original)
-    print(data_compressed)
+    data_decompressed = decompress(data_compressed)
+    print(data_original == data_decompressed)
 </py-script>
 </body>
 </html>
