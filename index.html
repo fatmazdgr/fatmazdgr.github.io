@@ -1,1 +1,84 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+</head>
+<body>
+<py-script>
+    def repeating_length_from_start(window, input_string):
+        """Get the maximum repeating length of the input from the start of the window"""
+
+        if window == "" or input_string == "":
+            return 0
+        elif window[0] == input_string[0]:
+            return 1 + repeating_length_from_start(window[1:] + input_string[0], input_string[1:])
+        else:
+            return 0
+
+    def best_length_offset(window, input_string, max_length=15, max_offset=4095):
+        """Return the offset and length with the biggest length of the input string as a substring"""
+
+        if max_offset < len(window):
+            cut_window = window[-max_offset:]
+        else:
+            cut_window = window
+
+        # return (0, 0) if the string provided is empty
+        if input_string is None or input_string == "":
+            return 0, 0
+
+        # initialise result parameters with best case so far
+        length, offset = (1, 0)
+
+        # catch the empty window case
+        if input_string[0] not in cut_window:
+            best_length = repeating_length_from_start(input_string[0], input_string[1:])
+            return min((length + best_length), max_length), offset
+
+        # best length now zero to allow occurrences to take priority
+        length = 0
+
+        # look for either the whole window or up to max offset away, whichever is smaller
+        for index in range(1, (len(cut_window) + 1)):
+            # get the character at this offset
+            char = cut_window[-index]
+            if char == input_string[0]:
+                found_offset = index
+                # collect any further strings which can be found
+                found_length = repeating_length_from_start(cut_window[-index:], input_string)
+                if found_length > length:
+                    length = found_length
+                    offset = found_offset
+
+        # only return up to the maximum length
+        return min(length, max_length), offset
+
+    def compress(input_string, max_offset=2047, max_length=31):
+        """Compress the input string into a list of length, offset, char values"""
+
+        # create the input
+        input_array = str(input_string[:])
+
+        # create a string of the characters which have been passed
+        window = ""
+
+        # store output in this list
+        output = []
+
+        while input_array != "":
+            length, offset = best_length_offset(window, input_array, max_length, max_offset)
+            output.append((offset, length, input_array[0]))
+            window += input_array[:length]
+            input_array = input_array[length:]
+
+        return output
+
+    data_original = "tipp tap tipp tap tippe tippe tipp tap"
+    data_compressed = compress(data_original)
+    print(data_compressed)
+</py-script>
+</body>
+</html>
