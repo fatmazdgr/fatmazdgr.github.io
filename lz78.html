@@ -8,101 +8,71 @@
 </head>
 <body>
 <py-script>
-    def repeating_length_from_start(window, input_string):
-        """Get the maximum repeating length of the input from the start of the window"""
+    def longest_common_substring(s1, s2):
+        # go along the first string and search for the longest match
+        maxLongest = 0
+        offset = 0
+        for i in range(0, len(s1)):
+            longest = 0
+            if ((i == len(s1) - len(s2) - 2)):
+                break
+            for j in range(0, len(s2)):
+                if (i+j < len(s1)):
+                    if s1[i+j] == s2[j]:
+                        longest = longest + 1
+                        if (maxLongest < longest):
+                            maxLongest = longest
+                            offset = i
+                    else:
+                        break
+                else:
+                    break
+        return maxLongest, offset
 
-        if window == "" or input_string == "":
-            return 0
-        elif window[0] == input_string[0]:
-            return 1 + repeating_length_from_start(window[1:] + input_string[0], input_string[1:])
-        else:
-            return 0
+    def encode_lz78(text):
+        dictionary = dict()
+        i = 0
+        index = 1
+        encodedNumbers = []
+        encodedLetters = []
+        while i < len(text):
+            stringToBeSaved = text[i]
+            indexInDictionary = 0
+            while stringToBeSaved in dictionary:
+                indexInDictionary = dictionary[stringToBeSaved]
+                if (i == len(text) - 1):
+                    stringToBeSaved = " "
+                    break
+                i = i + 1
+                stringToBeSaved = stringToBeSaved + text[i]
+            #print ("<{0}, {1}>".format(indexInDictionary, stringToBeSaved[len(stringToBeSaved) - 1]))
+            encodedNumbers.append(indexInDictionary)
+            encodedLetters.append(stringToBeSaved[len(stringToBeSaved) - 1])
+            if (stringToBeSaved not in dictionary):
+                dictionary[stringToBeSaved] = index
+                index = index + 1
+            i = i + 1
 
-    def best_length_offset(window, input_string, max_length=15, max_offset=4095):
-        """Return the offset and length with the biggest length of the input string as a substring"""
+        return encodedNumbers, encodedLetters, dictionary
 
-        if max_offset < len(window):
-            cut_window = window[-max_offset:]
-        else:
-            cut_window = window
+    def decode_lz78(encodedNumbers, encodedLetters, dictionary):
+        decoded = ""
+        i = 0
+        while i < len(encodedNumbers):
+            if (encodedNumbers[i] != 0):
+                decoded += str(list(dictionary.keys())[list(dictionary.values()).index(encodedNumbers[i])])
+            decoded+=(encodedLetters[i])
+            i = i+1
+        return decoded
 
-        # return (0, 0) if the string provided is empty
-        if input_string is None or input_string == "":
-            return 0, 0
-
-        # initialise result parameters with best case so far
-        length, offset = (1, 0)
-
-        # catch the empty window case
-        if input_string[0] not in cut_window:
-            best_length = repeating_length_from_start(input_string[0], input_string[1:])
-            return min((length + best_length), max_length), offset
-
-        # best length now zero to allow occurrences to take priority
-        length = 0
-
-        # look for either the whole window or up to max offset away, whichever is smaller
-        for index in range(1, (len(cut_window) + 1)):
-            # get the character at this offset
-            char = cut_window[-index]
-            if char == input_string[0]:
-                found_offset = index
-                # collect any further strings which can be found
-                found_length = repeating_length_from_start(cut_window[-index:], input_string)
-                if found_length > length:
-                    length = found_length
-                    offset = found_offset
-
-        # only return up to the maximum length
-        return min(length, max_length), offset
-
-    def compress(input_string, max_offset=2047, max_length=31):
-        """Compress the input string into a list of length, offset, char values"""
-
-        # create the input
-        input_array = str(input_string[:])
-
-        # create a string of the characters which have been passed
-        window = ""
-
-        # store output in this list
-        output = []
-
-        while input_array != "":
-            length, offset = best_length_offset(window, input_array, max_length, max_offset)
-            output.append((offset, length, input_array[0]))
-            window += input_array[:length]
-            input_array = input_array[length:]
-
-        return output
-
-    def decompress(compressed):
-        """Turn the list of (offset, length, char) into an output string"""
-
-        output = ""
-
-        for value in compressed:
-            offset, length, char = value
-
-            if length == 0:
-                if char is not None:
-                    output += char
-            else:
-                if offset == 0:
-                    if char is not None:
-                        output += char
-                        length -= 1
-                        offset = 1
-                start_index = len(output) - offset
-                for i in range(length):
-                    output += output[start_index + i]
-
-        return output
-
-    data_original = "tipp tap tipp tap tippe tippe tipp tap"
-    data_compressed = compress(data_original)
-    data_decompressed = decompress(data_compressed)
-    print(data_original == data_decompressed)
+    if __name__ == "__main__":
+        stringToEncode = "tipp tap tipp tap tippe tippe tipp tap"
+        [encodedNumbers, encodedLetters, dictionary] = encode_lz78(stringToEncode)
+        for i in range(len(encodedNumbers)):
+            print([encodedNumbers[i], encodedLetters[i]])
+        print("Decoded string: ", end = "")
+        decoded_string = decode_lz78(encodedNumbers, encodedLetters, dictionary)
+        print(decoded_string)
 </py-script>
 </body>
 </html>
