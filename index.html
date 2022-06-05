@@ -9,56 +9,6 @@
 </head>
 <body>
 <py-script>
-    # This function is used in the Lz77 algorithm.
-    def repeating_length_from_start(window, input_string):
-        """Get the maximum repeating length of the input from the start of the window"""
-
-        if window == "" or input_string == "":
-            return 0
-        elif window[0] == input_string[0]:
-            return 1 + repeating_length_from_start(window[1:] + input_string[0], input_string[1:])
-        else:
-            return 0
-
-    # This function is used in the Lz77 algorithm.
-    def best_length_offset(window, input_string, max_length=15, max_offset=4095):
-        """Return the offset and length with the biggest length of the input string as a substring"""
-
-        if max_offset < len(window):
-            cut_window = window[-max_offset:]
-        else:
-            cut_window = window
-
-        # return (0, 0) if the string provided is empty
-        if input_string is None or input_string == "":
-            return 0, 0
-
-        # initialize result parameters with best case so far
-        length, offset = (1, 0)
-
-        # catch the empty window case
-        if input_string[0] not in cut_window:
-            best_length = repeating_length_from_start(input_string[0], input_string[1:])
-            return min((length + best_length), max_length), offset
-
-        # the best length now zero to allow occurrences to take priority
-        length = 0
-
-        # look for either the whole window or up to max offset away, whichever is smaller
-        for index in range(1, (len(cut_window) + 1)):
-            # get the character at this offset
-            char = cut_window[-index]
-            if char == input_string[0]:
-                found_offset = index
-                # collect any further strings which can be found
-                found_length = repeating_length_from_start(cut_window[-index:], input_string)
-                if found_length > length:
-                    length = found_length
-                    offset = found_offset
-
-        # only return up to the maximum length
-        return min(length, max_length), offset
-
 
     # This function is used in the Lz78 algorithm.
     def longest_common_substring(s1, s2):
@@ -82,49 +32,84 @@
                     break
         return maxLongest, offset
 
-
-    def compress_lz77(input_string, max_offset=2047, max_length=31):
-        """Compress the input string into a list of length, offset, char values"""
-
-        # create the input
-        input_array = str(input_string[:])
-
-        # create a string of the characters which have been passed
-        window = ""
-
-        # store output in this list
+    def compress_lz77(text, ws):
+        '''
+        Parameters:
+            text
+            ws: window size
+        Returns:
+            ouput: tuple list the compression
+        '''
+        ws = int(ws)
+        matches = 0
         output = []
+        for i in range(0, len(text)):
+            # Skip many iterations as matches
+            if matches > 0:
+                matches = matches - 1
+                continue
 
-        while input_array != "":
-            length, offset = best_length_offset(window, input_array, max_length, max_offset)
-            output.append((offset, length, input_array[0]))
-            window += input_array[:length]
-            input_array = input_array[length:]
-
-        return output
-
-    def decompress_lz77(compressed):
-        """Turn the list of (offset, length, char) into an output string"""
-
-        output = ""
-
-        for value in compressed:
-            offset, length, char = value
-
-            if length == 0:
-                if char is not None:
-                    output += char
+            # Search window
+            if len(text[:i]) > ws:
+                window = text[i - ws:i]
             else:
-                if offset == 0:
-                    if char is not None:
-                        output += char
-                        length -= 1
-                        offset = 1
-                start_index = len(output) - offset
-                for i in range(length):
-                    output += output[start_index + i]
+                window = text[:i]
 
+            # Largest prefix
+            prefix = text[i]
+            while True:
+                if prefix in window:
+                    matches = matches + 1
+                    aux = prefix
+                    # check next prefix
+                    prefix = text[i:i + matches + 1]
+
+                    # special case last char
+                    if aux == prefix:
+                        prefix = prefix + '_'
+                        break
+                else:
+                    break
+
+            # Output
+            if matches == 0:
+                offset = 0
+                length = 0
+                symbol = prefix
+            else:
+                length = len(prefix) - 1  # prefix is ​​the last checked that didn't match
+                symbol = prefix[length]
+                prefix = prefix[:-1]  # correct prefix
+                offset = i - window.rfind(prefix) - (i - len(window))
+
+            output.append((offset, length, symbol))
         return output
+
+
+    def decompress_lz77(tuples):
+        '''
+        Parameters:
+            tuples: compress output
+        Returns:
+            decoded: original text
+        '''
+        decoded = ""
+        for i in range(0, len(tuples)):
+            if tuples[i][0] == 0:
+                # Add new patterns
+                decoded += tuples[i][2]
+            else:
+                offset = tuples[i][0]
+                length = tuples[i][1]
+                symbol = tuples[i][2]
+                j = len(decoded)
+                # Add repeated patterns
+                rep = decoded[j - offset:j - offset + length]
+                decoded += rep
+                # Final text special case
+                if symbol != "_":
+                    decoded += symbol
+        return decoded
 
 
     def compress_lz78(text):
@@ -167,7 +152,7 @@
     index_compress_lz77 = 0
     index_decompress_lz77 = 0
     data_original_lz77 = "tipp tap tipp tap tippe tippe tipp tap"
-    data_compressed_lz77 = compress_lz77(data_original_lz77)
+    data_compressed_lz77 = compress_lz77(data_original_lz77,len(data_original_lz77))
     data_decompressed_lz77 = decompress_lz77(data_compressed_lz77)
 
     # Initialize global variable for lz78 algorithm
@@ -184,7 +169,7 @@
     def get_compress_input_lz77(*args, **kwargs):
         global index_compress_lz77, data_original_lz77, data_compressed_lz77
         data_original_lz77 = Element("data_original_input_lz77").element.value
-        data_compressed_lz77 = compress_lz77(data_original_lz77)
+        data_compressed_lz77 = compress_lz77(data_original_lz77,len(data_original_lz77))
         index_compress_lz77 = 0
         pyscript.write("data_compressed_lz77", data_compressed_lz77[:index_compress_lz77])
 
@@ -269,7 +254,7 @@
         pyscript.write("data_decompressed_lz78", data_decompressed_lz78)
 
     Element("data_original_input_lz77").element.value = data_original_lz77
-    Element("data_compressed_input_lz77").element.value = [(0, 1, 't'), (0, 1, 'i'), (0, 2, 'p'), (0, 1, ' '), (5, 1, 't'), (0, 1, 'a'), (4, 3, 'p'), (9, 12, 'i'), (0, 1, 'e'), (6, 11, ' '), (21, 4, ' ')]
+    Element("data_compressed_input_lz77").element.value = [(0, 0, 't'), (0, 0, 'i'), (0, 0, 'p'), (1, 1, ' '), (5, 1, 'a'), (4, 3, 'i'), (9, 9, 'p'), (1, 1, 'e'), (6, 6, ' '), (21, 8, '_')]
     Element("data_original_input_lz78").element.value = data_original_lz78
     Element("data_compressed_input_lz78").element.value =  [[0, 't'], [0, 'i'], [0, 'p'], [3, ' '], [1, 'a'], [4, 't'], [2, 'p'], [6, 'a'], [6, 'i'], [3, 'p'], [0, 'e'], [0, ' '], [1, 'i'], [10, 'e'], [12, 't'], [7, 'p'], [15, 'a'], [3, ' ']]
 </py-script>
