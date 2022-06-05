@@ -1,1 +1,1 @@
-# lz77-lz78.github.io
+LZ77 and LZ78 algorithms
