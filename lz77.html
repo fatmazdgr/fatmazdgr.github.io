@@ -9,6 +9,7 @@
 </head>
 <body>
 <py-script>
+    # This function is used in the Lz77 algorithm.
     def repeating_length_from_start(window, input_string):
         """Get the maximum repeating length of the input from the start of the window"""
 
@@ -19,6 +20,7 @@
         else:
             return 0
 
+    # This function is used in the Lz77 algorithm.
     def best_length_offset(window, input_string, max_length=15, max_offset=4095):
         """Return the offset and length with the biggest length of the input string as a substring"""
 
@@ -57,7 +59,7 @@
         # only return up to the maximum length
         return min(length, max_length), offset
 
-    def compress(input_string, max_offset=2047, max_length=31):
+    def compress_lz77(input_string, max_offset=2047, max_length=31):
         """Compress the input string into a list of length, offset, char values"""
 
         # create the input
@@ -77,7 +79,7 @@
 
         return output
 
-    def decompress(compressed):
+    def decompress_lz77(compressed):
         """Turn the list of (offset, length, char) into an output string"""
 
         output = ""
@@ -100,55 +102,55 @@
 
         return output
 
-    index_compress = 0
-    index_decompress = 0
-    data_original = "tipp tap tipp tap tippe tippe tipp tap"
-    data_compressed = compress(data_original)
-    data_decompressed = decompress(data_compressed)
+    index_compress_lz77 = 0
+    index_decompress_lz77 = 0
+    data_original_lz77 = "tipp tap tipp tap tippe tippe tipp tap"
+    data_compressed_lz77 = compress_lz77(data_original_lz77)
+    data_decompressed_lz77 = decompress_lz77(data_compressed_lz77)
 
-    def get_compress_input(*args, **kwargs):
-        global index_compress, data_original, data_compressed
-        data_original = Element("data_original_input").element.value
-        data_compressed = compress(data_original)
-        index_compress = 0
-        pyscript.write("data_compressed", data_compressed[:index_compress])
+    def get_compress_input_lz77(*args, **kwargs):
+        global index_compress_lz77, data_original_lz77, data_compressed_lz77
+        data_original_lz77 = Element("data_original_input_lz77").element.value
+        data_compressed_lz77 = compress_lz77(data_original_lz77)
+        index_compress_lz77 = 0
+        pyscript.write("data_compressed_lz77", data_compressed_lz77[:index_compress_lz77])
 
-    def button_compress_previous(condition):
-        global index_compress
-        index_compress -= 1
-        index_compress = index_compress % len(data_compressed)
-        pyscript.write("data_compressed", data_compressed[:index_compress+1])
+    def button_compress_previous_lz77(condition):
+        global index_compress_lz77
+        index_compress_lz77 -= 1
+        index_compress_lz77 = index_compress_lz77 % len(data_compressed_lz77)
+        pyscript.write("data_compressed_lz77", data_compressed_lz77[:index_compress_lz77+1])
 
-    def button_compress_next(condition):
-        global index_compress
-        index_compress += 1
-        index_compress = index_compress % len(data_compressed)
-        pyscript.write("data_compressed", data_compressed[:index_compress+1])
+    def button_compress_next_lz77(condition):
+        global index_compress_lz77
+        index_compress_lz77 += 1
+        index_compress_lz77 = index_compress_lz77 % len(data_compressed_lz77)
+        pyscript.write("data_compressed_lz77", data_compressed_lz77[:index_compress_lz77+1])
 
-    def get_decompress_input(*args, **kwargs):
-        global index_decompress, data_compressed, data_decompressed
-        data_compressed = eval(Element("data_compressed_input").element.value)
-        index_decompress = -1
-        data_decompressed = " "
-        pyscript.write("data_decompressed", " ")
-        print(index_decompress)
+    def get_decompress_input_lz77(*args, **kwargs):
+        global index_decompress_lz77, data_compressed_lz77, data_decompressed_lz77
+        data_compressed_lz77 = eval(Element("data_compressed_input_lz77").element.value)
+        index_decompress_lz77 = -1
+        data_decompressed_lz77 = " "
+        pyscript.write("data_decompressed_lz77", " ")
+        print(index_decompress_lz77)
 
-    def button_decompress_previous(condition):
-        global index_decompress, data_decompressed
-        index_decompress -= 1
-        index_decompress = index_decompress % len(data_compressed)
-        data_decompressed = decompress(data_compressed[:index_decompress + 1])
-        pyscript.write("data_decompressed", data_decompressed)
+    def button_decompress_previous_lz77(condition):
+        global index_decompress_lz77, data_decompressed_lz77
+        index_decompress_lz77 -= 1
+        index_decompress_lz77 = index_decompress_lz77 % len(data_compressed_lz77)
+        data_decompressed_lz77 = decompress_lz77(data_compressed_lz77[:index_decompress_lz77 + 1])
+        pyscript.write("data_decompressed_lz77", data_decompressed_lz77)
 
-    def button_decompress_next(condition):
-        global index_decompress, data_decompressed
-        index_decompress += 1
-        index_decompress = index_decompress % len(data_compressed)
-        data_decompressed = decompress(data_compressed[:index_decompress + 1])
-        pyscript.write("data_decompressed", data_decompressed)
+    def button_decompress_next_lz77(condition):
+        global index_decompress_lz77, data_decompressed_lz77
+        index_decompress_lz77 += 1
+        index_decompress_lz77 = index_decompress_lz77 % len(data_compressed_lz77)
+        data_decompressed_lz77 = decompress_lz77(data_compressed_lz77[:index_decompress_lz77 + 1])
+        pyscript.write("data_decompressed_lz77", data_decompressed_lz77)
 
-    Element("data_original_input").element.value = data_original
-    Element("data_compressed_input").element.value = [(0, 1, 't'), (0, 1, 'i'), (0, 2, 'p'), (0, 1, ' '), (5, 1, 't'), (0, 1, 'a'), (4, 3, 'p'), (9, 12, 'i'), (0, 1, 'e'), (6, 11, ' '), (21, 4, ' ')]
+    Element("data_original_input_lz77").element.value = data_original_lz77
+    Element("data_compressed_input_lz77").element.value = [(0, 1, 't'), (0, 1, 'i'), (0, 2, 'p'), (0, 1, ' '), (5, 1, 't'), (0, 1, 'a'), (4, 3, 'p'), (9, 12, 'i'), (0, 1, 'e'), (6, 11, ' '), (21, 4, ' ')]
 
 </py-script>
 
@@ -161,43 +163,43 @@
             <div class="card-body">
                 <h5 class="card-title">Compress with LZ77 Compression Algorithm</h5>
                 <p class="card-text">
-                    <input type="text" id="data_original_input"
+                    <input type="text" id="data_original_input_lz77"
                            class="p-2 text-white bg-blue-600 border border-blue-600 rounded" style="width: 40vw;"/>
-                    <button id="get_compress_input" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                    <button id="get_compress_input_lz77" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
                             type="submit"
-                            pys-onClick="get_compress_input">
+                            pys-onClick="get_compress_input_lz77">
                         Enter
                     </button>
-                <div id="data_compressed" class="alert alert-primary" style="width: 40vw;"></div>
-                <button id="button_compress_previous" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                <div id="data_compressed_lz77" class="alert alert-primary" style="width: 40vw;"></div>
+                <button id="button_compress_previous_lz77" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
                         type="submit"
-                        pys-onClick="button_compress_previous">
+                        pys-onClick="button_compress_previous_lz77">
                     Previous
                 </button>
-                <button id="button_compress_next" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                <button id="button_compress_next_lz77" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
                         type="submit"
-                        pys-onClick="button_compress_next">
+                        pys-onClick="button_compress_next_lz77">
                     Next
                 </button>
                 </p>
                 <h5 class="card-title">Decompress with LZ77 Compression Algorithm</h5>
                 <p class="card-text">
-                    <input type="text" id="data_compressed_input"
+                    <input type="text" id="data_compressed_input_lz77"
                            class="p-2 text-white bg-blue-600 border border-blue-600 rounded" style="width: 40vw;"/>
-                    <button id="get_decompress_input" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                    <button id="get_decompress_input_lz77" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
                             type="submit"
-                            pys-onClick="get_decompress_input">
+                            pys-onClick="get_decompress_input_lz77">
                         Enter
                     </button>
-                <div id="data_decompressed" class="alert alert-primary" style="width: 40vw;"></div>
-                <button id="button_decompress_previous"
+                <div id="data_decompressed_lz77" class="alert alert-primary" style="width: 40vw;"></div>
+                <button id="button_decompress_previous_lz77"
                         class="p-2 text-white bg-blue-600 border border-blue-600 rounded" type="submit"
-                        pys-onClick="button_decompress_previous">
+                        pys-onClick="button_decompress_previous_lz77">
                     Previous
                 </button>
-                <button id="button_decompress_next" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                <button id="button_decompress_next_lz77" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
                         type="submit"
-                        pys-onClick="button_decompress_next">
+                        pys-onClick="button_decompress_next_lz77">
                     Next
                 </button>
                 </p>
