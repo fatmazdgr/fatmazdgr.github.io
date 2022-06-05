@@ -59,6 +59,30 @@
         # only return up to the maximum length
         return min(length, max_length), offset
 
+
+    # This function is used in the Lz78 algorithm.
+    def longest_common_substring(s1, s2):
+        # go along the first string and search for the longest match
+        maxLongest = 0
+        offset = 0
+        for i in range(0, len(s1)):
+            longest = 0
+            if ((i == len(s1) - len(s2) - 2)):
+                break
+            for j in range(0, len(s2)):
+                if (i+j < len(s1)):
+                    if s1[i+j] == s2[j]:
+                        longest = longest + 1
+                        if (maxLongest < longest):
+                            maxLongest = longest
+                            offset = i
+                    else:
+                        break
+                else:
+                    break
+        return maxLongest, offset
+
+
     def compress_lz77(input_string, max_offset=2047, max_length=31):
         """Compress the input string into a list of length, offset, char values"""
 
@@ -102,11 +126,60 @@
 
         return output
 
+
+    def compress_lz78(text):
+        dictionary = dict()
+        i = 0
+        index = 1
+        encodedNumbers = []
+        encodedLetters = []
+        while i < len(text):
+            stringToBeSaved = text[i]
+            indexInDictionary = 0
+            while stringToBeSaved in dictionary:
+                indexInDictionary = dictionary[stringToBeSaved]
+                if (i == len(text) - 1):
+                    stringToBeSaved = " "
+                    break
+                i = i + 1
+                stringToBeSaved = stringToBeSaved + text[i]
+            #print ("<{0}, {1}>".format(indexInDictionary, stringToBeSaved[len(stringToBeSaved) - 1]))
+            encodedNumbers.append(indexInDictionary)
+            encodedLetters.append(stringToBeSaved[len(stringToBeSaved) - 1])
+            if (stringToBeSaved not in dictionary):
+                dictionary[stringToBeSaved] = index
+                index = index + 1
+            i = i + 1
+
+        return encodedNumbers, encodedLetters, dictionary
+
+    def decompress_lz78(encodedNumbers, encodedLetters, dictionary):
+        decoded = ""
+        i = 0
+        while i < len(encodedNumbers):
+            if (encodedNumbers[i] != 0):
+                decoded += str(list(dictionary.keys())[list(dictionary.values()).index(encodedNumbers[i])])
+            decoded+=(encodedLetters[i])
+            i = i+1
+        return decoded
+
+    # Initialize global variable for lz77 algorithm
     index_compress_lz77 = 0
     index_decompress_lz77 = 0
     data_original_lz77 = "tipp tap tipp tap tippe tippe tipp tap"
     data_compressed_lz77 = compress_lz77(data_original_lz77)
     data_decompressed_lz77 = decompress_lz77(data_compressed_lz77)
+
+    # Initialize global variable for lz78 algorithm
+    index_compress_lz78 = 0
+    index_decompress_lz78 = 0
+    data_original_lz78 = "tipp tap tipp tap tippe tippe tipp tap"
+    data_compressed_lz78=[]
+    [encodedNumbers, encodedLetters, dictionary]=compress_lz78(data_original_lz78)
+    for i in range(len(encodedNumbers)):
+        data_compressed_lz78.append([encodedNumbers[i], encodedLetters[i]])
+    data_decompressed_lz78 = decompress_lz78(encodedNumbers, encodedLetters, dictionary)
+
 
     def get_compress_input_lz77(*args, **kwargs):
         global index_compress_lz77, data_original_lz77, data_compressed_lz77
@@ -127,6 +200,30 @@
         index_compress_lz77 = index_compress_lz77 % len(data_compressed_lz77)
         pyscript.write("data_compressed_lz77", data_compressed_lz77[:index_compress_lz77+1])
 
+    def get_compress_input_lz78(*args, **kwargs):
+        global index_compress_lz78, data_original_lz78, data_compressed_lz78,encodedNumbers,encodedLetters, dictionary
+        data_original_lz78 = Element("data_original_input_lz78").element.value
+        data_compressed_lz78=[]
+        [encodedNumbers, encodedLetters, dictionary]=compress_lz78(data_original_lz78)
+        for i in range(len(encodedNumbers)):
+            data_compressed_lz78.append([encodedNumbers[i], encodedLetters[i]])
+        index_compress_lz78 = 0
+        pyscript.write("data_compressed_lz78", data_compressed_lz78[:index_compress_lz78])
+
+    def button_compress_previous_lz78(condition):
+        global index_compress_lz78,encodedNumbers
+        index_compress_lz78 -= 1
+        index_compress_lz78 = index_compress_lz78 % len(encodedNumbers)
+        pyscript.write("data_compressed_lz78", data_compressed_lz78[:index_compress_lz78+1])
+
+    def button_compress_next_lz78(condition):
+        global index_compress_lz78
+        index_compress_lz78 += 1
+        index_compress_lz78 = index_compress_lz78 % len(data_compressed_lz78)
+        pyscript.write("data_compressed_lz78", data_compressed_lz78[:index_compress_lz78+1])
+
+
+    # Functions for the Lz77 decompress
     def get_decompress_input_lz77(*args, **kwargs):
         global index_decompress_lz77, data_compressed_lz77, data_decompressed_lz77
         data_compressed_lz77 = eval(Element("data_compressed_input_lz77").element.value)
@@ -149,9 +246,36 @@
         data_decompressed_lz77 = decompress_lz77(data_compressed_lz77[:index_decompress_lz77 + 1])
         pyscript.write("data_decompressed_lz77", data_decompressed_lz77)
 
+     # Functions for the Lz78 decompress
+    def get_decompress_input_lz78(*args, **kwargs):
+        global index_decompress_lz78, data_compressed_lz78, data_decompressed_lz78
+        data_compressed_lz78 = eval(Element("data_compressed_input_lz78").element.value)
+        index_decompress_lz78 = -1
+        data_decompressed_lz78 = " "
+        pyscript.write("data_decompressed_lz78", " ")
+        print(index_decompress_lz78)
+
+    def button_decompress_previous_lz78(condition):
+        global index_decompress_lz78, data_decompressed_lz78,encodedNumbers, encodedLetters, dictionary
+        index_decompress_lz78 -= 1
+        index_decompress_lz78 = index_decompress_lz78 % len(encodedNumbers)
+        print(len(encodedNumbers))
+        data_decompressed_x = decompress_lz78(encodedNumbers, encodedLetters, dictionary)
+        data_decompressed_lz78 = data_decompressed_x[:index_decompress_lz78 + 1]
+        pyscript.write("data_decompressed_lz78", data_decompressed_lz78)
+
+    def button_decompress_next_lz78(condition):
+        global index_decompress_lz78, data_decompressed_lz78,encodedNumbers, encodedLetters, dictionary
+        index_decompress_lz78 += 1
+        index_decompress_lz78 = index_decompress_lz78 % len(encodedNumbers)
+        data_decompressed_x = decompress_lz78(encodedNumbers, encodedLetters, dictionary)
+        data_decompressed_lz78 = data_decompressed_x[:index_decompress_lz78 + 1]
+        pyscript.write("data_decompressed_lz78", data_decompressed_lz78)
+
     Element("data_original_input_lz77").element.value = data_original_lz77
     Element("data_compressed_input_lz77").element.value = [(0, 1, 't'), (0, 1, 'i'), (0, 2, 'p'), (0, 1, ' '), (5, 1, 't'), (0, 1, 'a'), (4, 3, 'p'), (9, 12, 'i'), (0, 1, 'e'), (6, 11, ' '), (21, 4, ' ')]
-
+    Element("data_original_input_lz78").element.value = data_original_lz78
+    Element("data_compressed_input_lz78").element.value = [[0, 't'], [0, 'i'], [0, 'p'], [3, ' '], [1, 'a'], [4, 't'], [2, 'p'], [6, 'a'], [6, 'i'], [3, 'p'], [0, 'e'], [0, ' '], [1, 'i'], [10, 'e'], [12, 't'], [7, 'p'], [15, 'a'], [3, ' ']]
 </py-script>
 
 <div class="row">
@@ -213,9 +337,47 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title">Compress with LZ78 Compression Algorithm</h5>
-                <p class="card-text">Lorem ipsum</p>
+                 <p class="card-text">
+                    <input type="text" id="data_original_input_lz78"
+                           class="p-2 text-white bg-blue-600 border border-blue-600 rounded" style="width: 40vw;"/>
+                    <button id="get_compress_input_lz78" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                            type="submit"
+                            pys-onClick="get_compress_input_lz78">
+                        Enter
+                    </button>
+                <div id="data_compressed_lz78" class="alert alert-primary" style="width: 40vw;"></div>
+                <button id="button_compress_previous_lz78" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                        type="submit"
+                        pys-onClick="button_compress_previous_lz78">
+                    Previous
+                </button>
+                <button id="button_compress_next_lz78" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                        type="submit"
+                        pys-onClick="button_compress_next_lz78">
+                    Next
+                </button>
+                </p>
                 <h5 class="card-title">Decompress with LZ78 Compression Algorithm</h5>
-                <p class="card-text">Lorem ipsum</p>
+                <p class="card-text">
+                    <input type="text" id="data_compressed_input_lz78"
+                           class="p-2 text-white bg-blue-600 border border-blue-600 rounded" style="width: 40vw;"/>
+                    <button id="get_decompress_input_lz78" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                            type="submit"
+                            pys-onClick="get_decompress_input_lz78">
+                        Enter
+                    </button>
+                <div id="data_decompressed_lz78" class="alert alert-primary" style="width: 40vw;"></div>
+                <button id="button_decompress_previous_lz78"
+                        class="p-2 text-white bg-blue-600 border border-blue-600 rounded" type="submit"
+                        pys-onClick="button_decompress_previous_lz78">
+                    Previous
+                </button>
+                <button id="button_decompress_next_lz78" class="p-2 text-white bg-blue-600 border border-blue-600 rounded"
+                        type="submit"
+                        pys-onClick="button_decompress_next_lz78">
+                    Next
+                </button>
+                </p>
             </div>
         </div>
     </div>
