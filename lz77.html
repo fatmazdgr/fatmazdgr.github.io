@@ -180,7 +180,7 @@
         data_compressed_lz78.append([encodedNumbers[i], encodedLetters[i]])
     data_decompressed_lz78 = decompress_lz78(encodedNumbers, encodedLetters, dictionary)
 
-
+    # Functions for the Lz77 compress
     def get_compress_input_lz77(*args, **kwargs):
         global index_compress_lz77, data_original_lz77, data_compressed_lz77
         data_original_lz77 = Element("data_original_input_lz77").element.value
@@ -200,6 +200,7 @@
         index_compress_lz77 = index_compress_lz77 % len(data_compressed_lz77)
         pyscript.write("data_compressed_lz77", data_compressed_lz77[:index_compress_lz77+1])
 
+    # Functions for the Lz78 compress
     def get_compress_input_lz78(*args, **kwargs):
         global index_compress_lz78, data_original_lz78, data_compressed_lz78,encodedNumbers,encodedLetters, dictionary
         data_original_lz78 = Element("data_original_input_lz78").element.value
@@ -230,7 +231,6 @@
         index_decompress_lz77 = -1
         data_decompressed_lz77 = " "
         pyscript.write("data_decompressed_lz77", " ")
-        print(index_decompress_lz77)
 
     def button_decompress_previous_lz77(condition):
         global index_decompress_lz77, data_decompressed_lz77
@@ -246,36 +246,32 @@
         data_decompressed_lz77 = decompress_lz77(data_compressed_lz77[:index_decompress_lz77 + 1])
         pyscript.write("data_decompressed_lz77", data_decompressed_lz77)
 
-     # Functions for the Lz78 decompress
+    # Functions for the Lz78 decompress
     def get_decompress_input_lz78(*args, **kwargs):
         global index_decompress_lz78, data_compressed_lz78, data_decompressed_lz78
         data_compressed_lz78 = eval(Element("data_compressed_input_lz78").element.value)
-        index_decompress_lz78 = -1
+        index_decompress_lz78 = 0
         data_decompressed_lz78 = " "
         pyscript.write("data_decompressed_lz78", " ")
-        print(index_decompress_lz78)
 
     def button_decompress_previous_lz78(condition):
         global index_decompress_lz78, data_decompressed_lz78,encodedNumbers, encodedLetters, dictionary
         index_decompress_lz78 -= 1
         index_decompress_lz78 = index_decompress_lz78 % len(encodedNumbers)
-        print(len(encodedNumbers))
-        data_decompressed_x = decompress_lz78(encodedNumbers, encodedLetters, dictionary)
-        data_decompressed_lz78 = data_decompressed_x[:index_decompress_lz78 + 1]
+        data_decompressed_lz78 = decompress_lz78(encodedNumbers[:index_decompress_lz78 + 1], encodedLetters[:index_decompress_lz78 + 1], dictionary)
         pyscript.write("data_decompressed_lz78", data_decompressed_lz78)
 
     def button_decompress_next_lz78(condition):
         global index_decompress_lz78, data_decompressed_lz78,encodedNumbers, encodedLetters, dictionary
         index_decompress_lz78 += 1
         index_decompress_lz78 = index_decompress_lz78 % len(encodedNumbers)
-        data_decompressed_x = decompress_lz78(encodedNumbers, encodedLetters, dictionary)
-        data_decompressed_lz78 = data_decompressed_x[:index_decompress_lz78 + 1]
+        data_decompressed_lz78 = decompress_lz78(encodedNumbers[:index_decompress_lz78 + 1], encodedLetters[:index_decompress_lz78 + 1], dictionary)
         pyscript.write("data_decompressed_lz78", data_decompressed_lz78)
 
     Element("data_original_input_lz77").element.value = data_original_lz77
     Element("data_compressed_input_lz77").element.value = [(0, 1, 't'), (0, 1, 'i'), (0, 2, 'p'), (0, 1, ' '), (5, 1, 't'), (0, 1, 'a'), (4, 3, 'p'), (9, 12, 'i'), (0, 1, 'e'), (6, 11, ' '), (21, 4, ' ')]
     Element("data_original_input_lz78").element.value = data_original_lz78
-    Element("data_compressed_input_lz78").element.value = [[0, 't'], [0, 'i'], [0, 'p'], [3, ' '], [1, 'a'], [4, 't'], [2, 'p'], [6, 'a'], [6, 'i'], [3, 'p'], [0, 'e'], [0, ' '], [1, 'i'], [10, 'e'], [12, 't'], [7, 'p'], [15, 'a'], [3, ' ']]
+    Element("data_compressed_input_lz78").element.value =  [[0, 't'], [0, 'i'], [0, 'p'], [3, ' '], [1, 'a'], [4, 't'], [2, 'p'], [6, 'a'], [6, 'i'], [3, 'p'], [0, 'e'], [0, ' '], [1, 'i'], [10, 'e'], [12, 't'], [7, 'p'], [15, 'a'], [3, ' ']]
 </py-script>
 
 <div class="row">
