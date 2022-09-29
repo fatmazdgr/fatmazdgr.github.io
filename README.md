@@ -1,4 +1,4 @@
-#LZ77 and LZ78 Algorithms
+# LZ77 and LZ78 Algorithms
 
 ## **_Link_** ##
 
