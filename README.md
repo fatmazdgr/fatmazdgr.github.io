@@ -1,2 +1,5 @@
 LZ77 and LZ78 algorithms
-Url: fatmazdgr.github.io
+
+## **_Link_** ##
+
+https:/fatmazdgr.github.io
